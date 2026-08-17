@@ -34,7 +34,7 @@ preprocessor = ColumnTransformer(transformers=[
 
 pipeline = Pipeline(steps=[
     ("preprocessor",preprocessor),
-    ("model",RandomForestClassifier(n_estimators=300, max_depth=8, random_state=42, class_weight="balanced"))
+    ("model",RandomForestClassifier(n_estimators=100, max_depth=5, random_state=42, class_weight="balanced"))
 ])
 pipeline.fit(X_train,y_train)
 
