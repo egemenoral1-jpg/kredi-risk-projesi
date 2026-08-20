@@ -38,8 +38,8 @@ kredi-risk-projesi/
 
 1. **Veri temizleme:** eksik değer, tekrarlanan satır ve aykırı değer kontrolü yapıldı (hiçbiri veri kalitesini bozacak düzeyde bulunmadı).
 2. **Ön işleme:** `ColumnTransformer` ile sayısal değişkenler `StandardScaler`, kategorik değişkenler `OneHotEncoder` (`drop="first"`, `handle_unknown="ignore"`) kullanılarak dönüştürüldü.
-3. **Model karşılaştırması:** Logistic Regression ve Random Forest, 5-fold cross-validation ile recall metriği üzerinden karşılaştırıldı.
-4. **Hiperparametre optimizasyonu:** `GridSearchCV` ile Random Forest'ın `n_estimators` ve `max_depth` parametreleri optimize edildi.
+3. **Model karşılaştırması:** Logistic Regression, Random Forest ve XGBoost, 5-fold cross-validation ile recall metriği üzerinden karşılaştırıldı.
+4. **Hiperparametre optimizasyonu:** `GridSearchCV` ile hem Random Forest'ın (`n_estimators`, `max_depth`) hem de XGBoost'un (`max_depth`, `learning_rate`, `n_estimators`) parametreleri optimize edildi.
 
 ## Model Performansı
 
@@ -48,6 +48,17 @@ kredi-risk-projesi/
 | Logistic Regression | %48.0 |
 | Random Forest (elle ayarlanmış) | %68.7 |
 | **Random Forest (GridSearch, final)** | **%70.2** |
+
+| Model | Recall (CV ortalaması) | F2 Skoru |
+|---|---|---|
+| Logistic Regression | %48.0 | - |
+| Random Forest (elle ayarlanmış) | %68.7 | - |
+| Random Forest (GridSearch, final) | %70.2 | **0.679** |
+| XGBoost (GridSearch) | **%78.3** | 0.671 |
+
+**Neden Random Forest seçildi (XGBoost'a rağmen):** XGBoost, GridSearch sonrası recall'da belirgin şekilde önde çıktı (%78.3 vs %70.2), ancak bu artış precision'da ciddi bir düşüşle geldi (0.46 vs 0.52) — yani daha fazla iyi müşteriyi yanlışlıkla riskli işaretliyor. Recall'ı precision'dan daha ağırlıklı değerlendiren **F2 skoruna** göre iki model neredeyse eşit çıktı (RF hafif önde: 0.679 vs 0.671). Bu denge durumunda, Random Forest'ın daha kolay yorumlanabilir olması (feature importance) ve daha basit yapısı final karar için belirleyici oldu.
+
+
 
 **Final model** (`n_estimators=100, max_depth=5`) test setinde:
 - Precision (kötü kredi): 0.52
@@ -87,6 +98,6 @@ python src/predict.py
 ## Geliştirme Fikirleri
 
 - SMOTE gibi tekniklerle sınıf dengesizliğini ayrıca ele almak
-- XGBoost/LightGBM gibi farklı modelleri denemek
 - `purpose` değişkenindeki açıklanamayan risk sinyalini daha derin incelemek
 - Basit bir web arayüzü (Streamlit/Flask) ile canlı tahmin servisi kurmak
+- SHAP ile model açıklanabilirliğini artırmak (hangi başvuru neden riskli/riskli değil işaretlendi)
