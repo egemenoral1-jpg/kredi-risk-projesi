@@ -1,5 +1,8 @@
 import pandas as pd
 import joblib
+import shap
+import numpy as np
+import matplotlib.pyplot as plt
 
 from sklearn.model_selection import train_test_split, cross_val_score
 from sklearn.compose import ColumnTransformer
@@ -87,6 +90,39 @@ print(f"RF F2: {f2_rf}")
 print(f"XGBoost F2: {f2_xgb}")
 
 
+
+# Test verisini preprocessor'dan geçir (modelin gördüğü hale getir)
+X_test_transformed = pipeline.named_steps["preprocessor"].transform(X_test)
+
+# Ham Random Forest modelini pipeline'dan çek
+rf_model = pipeline.named_steps["model"]
+
+# TreeExplainer oluştur
+explainer = shap.TreeExplainer(rf_model)
+
+# SHAP değerlerini hesapla
+shap_values = explainer.shap_values(X_test_transformed)
+
+print(type(shap_values))
+print(np.array(shap_values).shape if not isinstance(shap_values, list) else [s.shape for s in shap_values])
+
+
+shap_values_class1 = shap_values[:, :, 1]
+
+feature_names = pipeline.named_steps["preprocessor"].get_feature_names_out()
+
+shap.summary_plot(shap_values_class1, X_test_transformed, feature_names=feature_names)
+
+
+
+
+
+import matplotlib.pyplot as plt
+
+shap.summary_plot(shap_values_class1, X_test_transformed, feature_names=feature_names, show=False)
+plt.tight_layout()
+plt.savefig("reports/shap_summary.png", dpi=110)
+plt.close()
 
 
 
